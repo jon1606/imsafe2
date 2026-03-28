@@ -22,10 +22,11 @@ export async function createGroup(formData: FormData): Promise<ActionResult<{ gr
     data: {
       name: parsed.data.name,
       createdById: userId,
-      members: {
-        create: { userId, role: "ADMIN" },
-      },
     },
+  });
+
+  await prisma.groupMember.create({
+    data: { groupId: group.id, userId, role: "ADMIN" },
   });
 
   revalidatePath("/groups");
