@@ -1,0 +1,212 @@
+// SafeCircle – Prisma Schema
+// PostgreSQL + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum SafetyStatus {
+  SAFE
+  NEED_HELP
+  NO_UPDATE
+}
+
+enum FollowState {
+  PENDING
+  ACCEPTED
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+enum AlertState {
+  ACTIVE
+  RESOLVED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────────
+// User
+// ─────────────────────────────────────────────
+
+model User {
+  id          String   @id @default(cuid())
+  phone       String   @unique
+  displayName String?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions        UserSession[]
+  statusUpdates   StatusUpdate[]
+  groupMembers    GroupMember[]
+  createdGroups   Group[]         @relation("GroupCreator")
+
+  // follow graph
+  following       ContactFollow[] @relation("Follower")
+  followers       ContactFollow[] @relation("Following")
+
+  // push
+  pushSubscriptions PushSubscription[]
+
+  // alert responses
+  alertResponses  AlertResponse[]
+
+  @@index([phone])
+}
+
+// ─────────────────────────────────────────────
+// Session (iron-session backed, stored in DB for audit)
+// ─────────────────────────────────────────────
+
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// Contact / Follow
+// ─────────────────────────────────────────────
+
+model ContactFollow {
+  id          String      @id @default(cuid())
+  followerId  String
+  followingId String
+  state       FollowState @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  follower  User @relation("Follower",  fields: [followerId],  references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ─────────────────────────────────────────────
+// Groups
+// ─────────────────────────────────────────────
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  imageUrl    String?
+  inviteCode  String   @unique @default(cuid())
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator   User   @relation("GroupCreator", fields: [createdById], references: [id])
+
+  members     GroupMember[]
+  alertEvents AlertEvent[]
+
+  @@index([inviteCode])
+  @@index([createdById])
+}
+
+model GroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  userId   String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// Safety Status
+// ─────────────────────────────────────────────
+
+model StatusUpdate {
+  id        String       @id @default(cuid())
+  userId    String
+  groupId   String?      // null = global status
+  status    SafetyStatus @default(NO_UPDATE)
+  note      String?      @db.VarChar(280)
+  createdAt DateTime     @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([userId, groupId])
+}
+
+// ─────────────────────────────────────────────
+// Alert Events
+// ─────────────────────────────────────────────
+
+model AlertEvent {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  sourceType  String     @default("MANUAL") // MANUAL | EXTERNAL_PROVIDER | etc.
+  sourceRef   String?    // external ref id
+  groupId     String?    // null = broadcast to all users
+  state       AlertState @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  expiresAt   DateTime?
+
+  group     Group?          @relation(fields: [groupId], references: [id])
+  responses AlertResponse[]
+
+  @@index([state])
+  @@index([groupId])
+}
+
+model AlertResponse {
+  id           String       @id @default(cuid())
+  alertEventId String
+  userId       String
+  status       SafetyStatus
+  note         String?
+  respondedAt  DateTime     @default(now())
+
+  alertEvent AlertEvent @relation(fields: [alertEventId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([alertEventId, userId])
+  @@index([alertEventId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// Push Subscriptions (Web Push)
+// ─────────────────────────────────────────────
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
