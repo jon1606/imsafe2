@@ -71,7 +71,7 @@ export default async function AlertDetailPage({ params }: PageProps) {
 
           {alert.responses.length > 0 && (
             <ul className="divide-y divide-gray-50">
-              {alert.responses.map((r) => (
+              {alert.responses.map((r: any) => (
                 <li key={r.id} className="flex items-center gap-3 py-2.5">
                   <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
                     {(r.user.displayName ?? r.user.phone).charAt(0).toUpperCase()}

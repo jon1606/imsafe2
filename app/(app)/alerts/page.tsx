@@ -67,7 +67,7 @@ export default async function AlertsPage() {
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
               Active
             </h2>
-            {activeAlerts.map((alert) => (
+            {activeAlerts.map((alert: any) => (
               <a key={alert.id} href={`/alerts/${alert.id}`}>
                 <AlertCard alert={alert} />
               </a>
@@ -80,7 +80,7 @@ export default async function AlertsPage() {
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mt-2">
               Past
             </h2>
-            {pastAlerts.map((alert) => (
+            {pastAlerts.map((alert: any) => (
               <a key={alert.id} href={`/alerts/${alert.id}`}>
                 <AlertCard alert={alert} compact />
               </a>

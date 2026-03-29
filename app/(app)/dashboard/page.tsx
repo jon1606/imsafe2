@@ -114,7 +114,7 @@ export default async function DashboardPage() {
       {/* Active alerts */}
       {activeAlerts.length > 0 && (
         <div className="space-y-2">
-          {activeAlerts.map((alert) => (
+          {activeAlerts.map((alert: any) => (
             <a key={alert.id} href={`/alerts/${alert.id}`}>
               <AlertCard alert={alert} compact />
             </a>
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-2">
-            {groupsWithCounts.map((group) => (
+            {groupsWithCounts.map((group: any) => (
               <GroupCard key={group.id} group={group} />
             ))}
           </div>

@@ -70,7 +70,7 @@ export default async function GroupsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {groupsWithCounts.map((group) => (
+          {groupsWithCounts.map((group: any) => (
             <GroupCard key={group.id} group={group} />
           ))}
         </div>

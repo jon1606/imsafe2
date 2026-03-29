@@ -50,7 +50,7 @@ async function sendToSubscription(
 
 export async function sendPushToUser(userId: string, payload: string) {
   const subs = await prisma.pushSubscription.findMany({ where: { userId } });
-  await Promise.allSettled(subs.map((s) => sendToSubscription(s, payload)));
+  await Promise.allSettled(subs.map((s: any) => sendToSubscription(s, payload)));
 }
 
 export async function sendPushToGroup(groupId: string, payload: string) {
@@ -59,11 +59,11 @@ export async function sendPushToGroup(groupId: string, payload: string) {
     select: { userId: true },
   });
   await Promise.allSettled(
-    members.map((m) => sendPushToUser(m.userId, payload))
+    members.map((m: any) => sendPushToUser(m.userId, payload))
   );
 }
 
 export async function sendPushToAllUsers(payload: string) {
   const subs = await prisma.pushSubscription.findMany();
-  await Promise.allSettled(subs.map((s) => sendToSubscription(s, payload)));
+  await Promise.allSettled(subs.map((s: any) => sendToSubscription(s, payload)));
 }

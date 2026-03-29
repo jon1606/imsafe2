@@ -133,7 +133,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
             Recent Updates
           </h3>
           <ul className="divide-y divide-gray-50">
-            {recentUpdates.map((update) => (
+            {recentUpdates.map((update: any) => (
               <li key={update.id} className="px-4 py-2.5 flex items-start gap-2">
                 <span
                   className={`mt-0.5 text-xs font-bold rounded-full px-1.5 py-0.5 ${
