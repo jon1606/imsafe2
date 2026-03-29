@@ -67,7 +67,7 @@ export default async function ContactsPage() {
         </div>
       ) : (
         <div className="bg-white mt-2 divide-y divide-gray-100">
-          {following.map(({ following: contact }) => (
+          {following.map(({ following: contact }: any) => (
             <ContactCard
               key={contact.id}
               user={contact}
@@ -84,7 +84,7 @@ export default async function ContactsPage() {
             Pending sent ({outgoingRequests.length})
           </p>
           <div className="bg-white divide-y divide-gray-100">
-            {outgoingRequests.map(({ following: contact }) => (
+            {outgoingRequests.map(({ following: contact }: any) => (
               <div key={contact.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-500">
                   {(contact.displayName ?? contact.phone).charAt(0).toUpperCase()}

@@ -29,10 +29,10 @@ export default async function AlertDetailPage({ params }: PageProps) {
 
   if (!alert) notFound();
 
-  const myResponse = alert.responses.find((r) => r.userId === userId);
+  const myResponse = alert.responses.find((r: any) => r.userId === userId);
 
-  const safeCount = alert.responses.filter((r) => r.status === "SAFE").length;
-  const needHelpCount = alert.responses.filter((r) => r.status === "NEED_HELP").length;
+  const safeCount = alert.responses.filter((r: any) => r.status === "SAFE").length;
+  const needHelpCount = alert.responses.filter((r: any) => r.status === "NEED_HELP").length;
 
   return (
     <div className="space-y-0">

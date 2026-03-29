@@ -35,13 +35,13 @@ export default async function GroupDetailPage({ params }: PageProps) {
   const membersWithStatus = await getGroupMemberStatuses(groupId);
 
   const safeCount = membersWithStatus.filter(
-    (m) => m.latestStatus?.status === "SAFE"
+    (m: any) => m.latestStatus?.status === "SAFE"
   ).length;
   const needHelpCount = membersWithStatus.filter(
-    (m) => m.latestStatus?.status === "NEED_HELP"
+    (m: any) => m.latestStatus?.status === "NEED_HELP"
   ).length;
   const noUpdateCount = membersWithStatus.filter(
-    (m) => !m.latestStatus || m.latestStatus.status === "NO_UPDATE"
+    (m: any) => !m.latestStatus || m.latestStatus.status === "NO_UPDATE"
   ).length;
 
   const recentUpdates = await prisma.statusUpdate.findMany({

@@ -16,7 +16,7 @@ export default async function AlertsPage() {
     where: { userId },
     select: { groupId: true },
   });
-  const groupIds = userGroups.map((m) => m.groupId);
+  const groupIds = userGroups.map((m: any) => m.groupId);
 
   const alerts = await prisma.alertEvent.findMany({
     where: {
@@ -33,8 +33,8 @@ export default async function AlertsPage() {
     take: 50,
   });
 
-  const activeAlerts = alerts.filter((a) => a.state === "ACTIVE");
-  const pastAlerts = alerts.filter((a) => a.state !== "ACTIVE");
+  const activeAlerts = alerts.filter((a: any) => a.state === "ACTIVE");
+  const pastAlerts = alerts.filter((a: any) => a.state !== "ACTIVE");
 
   return (
     <div className="space-y-0">

@@ -32,16 +32,16 @@ export default async function GroupsPage() {
     orderBy: { joinedAt: "desc" },
   });
 
-  const groupsWithCounts = memberships.map(({ group }) => {
+  const groupsWithCounts = memberships.map(({ group }: any) => {
     const members = group.members;
     const safe = members.filter(
-      (m) => m.user.statusUpdates[0]?.status === "SAFE"
+      (m: any) => m.user.statusUpdates[0]?.status === "SAFE"
     ).length;
     const needHelp = members.filter(
-      (m) => m.user.statusUpdates[0]?.status === "NEED_HELP"
+      (m: any) => m.user.statusUpdates[0]?.status === "NEED_HELP"
     ).length;
     const noUpdate = members.filter(
-      (m) => !m.user.statusUpdates[0] || m.user.statusUpdates[0].status === "NO_UPDATE"
+      (m: any) => !m.user.statusUpdates[0] || m.user.statusUpdates[0].status === "NO_UPDATE"
     ).length;
 
     return {

@@ -60,7 +60,7 @@ export async function getGroupMemberStatuses(groupId: string) {
   });
 
   const statuses = await Promise.all(
-    members.map(async (m) => {
+    members.map(async (m: any) => {
       const latest = await prisma.statusUpdate.findFirst({
         where: { userId: m.userId, groupId },
         orderBy: { createdAt: "desc" },

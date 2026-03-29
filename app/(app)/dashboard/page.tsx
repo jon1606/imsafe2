@@ -48,15 +48,15 @@ export default async function DashboardPage() {
     take: 5,
   });
 
-  const groupsWithCounts = memberships.map(({ group }) => {
+  const groupsWithCounts = memberships.map(({ group }: any) => {
     const safe = group.members.filter(
-      (m) => m.user.statusUpdates[0]?.status === "SAFE"
+      (m: any) => m.user.statusUpdates[0]?.status === "SAFE"
     ).length;
     const needHelp = group.members.filter(
-      (m) => m.user.statusUpdates[0]?.status === "NEED_HELP"
+      (m: any) => m.user.statusUpdates[0]?.status === "NEED_HELP"
     ).length;
     const noUpdate = group.members.filter(
-      (m) =>
+      (m: any) =>
         !m.user.statusUpdates[0] ||
         m.user.statusUpdates[0].status === "NO_UPDATE"
     ).length;
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
   });
 
   // Active alerts
-  const userGroupIds = memberships.map((m) => m.groupId);
+  const userGroupIds = memberships.map((m: any) => m.groupId);
   const activeAlerts = await prisma.alertEvent.findMany({
     where: {
       state: "ACTIVE",
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-50">
-            {contacts.map(({ following: contact }) => (
+            {contacts.map(({ following: contact }: any) => (
               <ContactCard
                 key={contact.id}
                 user={contact}
