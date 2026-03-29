@@ -237,7 +237,7 @@ function getRelated(
   rel: Relation,
   where?: Record<string, unknown>
 ): Record<string, unknown>[] {
-  const col = DB[rel.collection] as Record<string, unknown>[];
+  const col = DB[rel.collection] as unknown as Record<string, unknown>[];
   let items: Record<string, unknown>[];
 
   if (rel.type === "belongsTo") {
@@ -274,7 +274,7 @@ function model<T extends { id: string }>(collKey: keyof typeof DB, modelName: st
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async findFirst(args?: { where?: Record<string, unknown>; include?: any; orderBy?: Record<string, string>; take?: number }): Promise<any> {
       let items = args?.where ? col().filter((r) => matches(r as Record<string, unknown>, args.where!)) : [...col()];
-      if (args?.orderBy) items = sortItems(items as Record<string, unknown>[], args.orderBy) as T[];
+      if (args?.orderBy) items = sortItems(items as unknown as Record<string, unknown>[], args.orderBy) as unknown as T[];
       const item = items[0] ?? null;
       if (!item) return null;
       let res: Record<string, unknown> = { ...item };
@@ -285,8 +285,8 @@ function model<T extends { id: string }>(collKey: keyof typeof DB, modelName: st
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async findMany(args?: { where?: Record<string, unknown>; include?: any; select?: any; orderBy?: Record<string, string>; take?: number }): Promise<any[]> {
       let items: Record<string, unknown>[] = args?.where
-        ? (col().filter((r) => matches(r as Record<string, unknown>, args.where!)) as Record<string, unknown>[])
-        : (col() as Record<string, unknown>[]).slice();
+        ? (col().filter((r) => matches(r as Record<string, unknown>, args.where!)) as unknown as Record<string, unknown>[])
+        : (col() as unknown as Record<string, unknown>[]).slice();
       if (args?.orderBy) items = sortItems(items, args.orderBy);
       if (args?.take !== undefined) items = items.slice(0, args.take);
       if (args?.include) items = items.map((r) => resolveIncludes(r, modelName, args.include));
