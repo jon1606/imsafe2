@@ -252,57 +252,69 @@ function getRelated(
 }
 
 // ─── Generic model factory ────────────────────────────────────────────────────
+// Return types are `any` so TypeScript allows accessing included relation fields
+// (e.g. alert.responses, group._count, member.user) without compile errors.
+// Runtime correctness is handled by resolveIncludes at query time.
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function model<T extends { id: string }>(collKey: keyof typeof DB, modelName: string) {
   const col = () => DB[collKey] as T[];
 
   return {
-    async findUnique(args: { where: Record<string, unknown>; include?: Record<string, IncludeValue>; select?: Record<string, boolean> }): Promise<T | null> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async findUnique(args: { where: Record<string, unknown>; include?: any; select?: any }): Promise<any> {
       const item = col().find((r) => matches(r as Record<string, unknown>, args.where));
       if (!item) return null;
       let res: Record<string, unknown> = { ...item };
       if (args.include) res = resolveIncludes(res, modelName, args.include);
       if (args.select)  res = applySelect(res, args.select);
-      return res as T;
+      return res;
     },
 
-    async findFirst(args?: { where?: Record<string, unknown>; include?: Record<string, IncludeValue>; orderBy?: Record<string, string>; take?: number }): Promise<T | null> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async findFirst(args?: { where?: Record<string, unknown>; include?: any; orderBy?: Record<string, string>; take?: number }): Promise<any> {
       let items = args?.where ? col().filter((r) => matches(r as Record<string, unknown>, args.where!)) : [...col()];
       if (args?.orderBy) items = sortItems(items as Record<string, unknown>[], args.orderBy) as T[];
       const item = items[0] ?? null;
       if (!item) return null;
       let res: Record<string, unknown> = { ...item };
-      if (args?.include) res = resolveIncludes(res, modelName, args.include!);
-      return res as T;
+      if (args?.include) res = resolveIncludes(res, modelName, args.include);
+      return res;
     },
 
-    async findMany(args?: { where?: Record<string, unknown>; include?: Record<string, IncludeValue>; select?: Record<string, boolean>; orderBy?: Record<string, string>; take?: number }): Promise<T[]> {
-      let items = args?.where ? col().filter((r) => matches(r as Record<string, unknown>, args.where!)) : [...col()];
-      if (args?.orderBy) items = sortItems(items as Record<string, unknown>[], args.orderBy) as T[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async findMany(args?: { where?: Record<string, unknown>; include?: any; select?: any; orderBy?: Record<string, string>; take?: number }): Promise<any[]> {
+      let items: Record<string, unknown>[] = args?.where
+        ? (col().filter((r) => matches(r as Record<string, unknown>, args.where!)) as Record<string, unknown>[])
+        : (col() as Record<string, unknown>[]).slice();
+      if (args?.orderBy) items = sortItems(items, args.orderBy);
       if (args?.take !== undefined) items = items.slice(0, args.take);
-      if (args?.include) items = items.map((r) => resolveIncludes(r as Record<string, unknown>, modelName, args.include!) as T);
-      if (args?.select)  items = items.map((r) => applySelect(r as Record<string, unknown>, args.select!) as T);
+      if (args?.include) items = items.map((r) => resolveIncludes(r, modelName, args.include));
+      if (args?.select)  items = items.map((r) => applySelect(r, args.select));
       return items;
     },
 
-    async create(args: { data: Partial<T> & Record<string, unknown>; include?: Record<string, IncludeValue> }): Promise<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async create(args: { data: Partial<T> & Record<string, unknown>; include?: any }): Promise<any> {
       const newItem = { id: randomUUID(), createdAt: new Date(), updatedAt: new Date(), ...args.data } as T;
       col().push(newItem);
       let res: Record<string, unknown> = { ...newItem };
       if (args.include) res = resolveIncludes(res, modelName, args.include);
-      return res as T;
+      return res;
     },
 
-    async update(args: { where: Record<string, unknown>; data: Partial<T> & Record<string, unknown>; include?: Record<string, IncludeValue> }): Promise<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async update(args: { where: Record<string, unknown>; data: Partial<T> & Record<string, unknown>; include?: any }): Promise<any> {
       const idx = col().findIndex((r) => matches(r as Record<string, unknown>, args.where));
       if (idx === -1) throw new Error(`${modelName} not found`);
       col()[idx] = { ...col()[idx], ...args.data, updatedAt: new Date() } as T;
       let res: Record<string, unknown> = { ...col()[idx] };
       if (args.include) res = resolveIncludes(res, modelName, args.include);
-      return res as T;
+      return res;
     },
 
-    async upsert(args: { where: Record<string, unknown>; create: Partial<T> & Record<string, unknown>; update: Partial<T> & Record<string, unknown>; include?: Record<string, IncludeValue> }): Promise<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async upsert(args: { where: Record<string, unknown>; create: Partial<T> & Record<string, unknown>; update: Partial<T> & Record<string, unknown>; include?: any }): Promise<any> {
       const idx = col().findIndex((r) => matches(r as Record<string, unknown>, args.where));
       if (idx === -1) {
         return this.create({ data: args.create, include: args.include });
@@ -310,10 +322,10 @@ function model<T extends { id: string }>(collKey: keyof typeof DB, modelName: st
       col()[idx] = { ...col()[idx], ...args.update, updatedAt: new Date() } as T;
       let res: Record<string, unknown> = { ...col()[idx] };
       if (args.include) res = resolveIncludes(res, modelName, args.include);
-      return res as T;
+      return res;
     },
 
-    async delete(args: { where: Record<string, unknown> }): Promise<T> {
+    async delete(args: { where: Record<string, unknown> }): Promise<any> {
       const idx = col().findIndex((r) => matches(r as Record<string, unknown>, args.where));
       if (idx === -1) throw new Error(`${modelName} not found`);
       const [deleted] = col().splice(idx, 1);
