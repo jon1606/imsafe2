@@ -258,7 +258,7 @@ function getRelated(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function model<T extends { id: string }>(collKey: keyof typeof DB, modelName: string) {
-  const col = () => DB[collKey] as T[];
+  const col = () => DB[collKey] as unknown as T[];
 
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
