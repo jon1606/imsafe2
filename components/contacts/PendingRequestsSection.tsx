@@ -14,11 +14,11 @@ export function PendingRequestsSection({ requests }: PendingRequestsSectionProps
   const [isPending, startTransition] = useTransition();
 
   function accept(id: string) {
-    startTransition(() => acceptFollowRequest(id));
+    startTransition(() => { void acceptFollowRequest(id); });
   }
 
   function reject(id: string) {
-    startTransition(() => rejectFollowRequest(id));
+    startTransition(() => { void rejectFollowRequest(id); });
   }
 
   return (
