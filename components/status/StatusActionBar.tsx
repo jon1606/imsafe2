@@ -21,12 +21,14 @@ export function StatusActionBar({ groupId, currentStatus, onSuccess }: StatusAct
 
   function submit(status: SafetyStatus) {
     setSelected(status);
-    startTransition(async () => {
-      await updateMyStatus(status, note || null, groupId);
-      setNote("");
-      setShowNote(false);
-      setSelected(null);
-      onSuccess?.();
+    startTransition(() => {
+      void (async () => {
+        await updateMyStatus(status, note || null, groupId);
+        setNote("");
+        setShowNote(false);
+        setSelected(null);
+        onSuccess?.();
+      })();
     });
   }
 

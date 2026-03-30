@@ -24,61 +24,67 @@ export function LoginFlow() {
   async function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    startTransition(async () => {
-      const res = await fetch("/api/auth/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Failed to send OTP");
-        return;
-      }
-      setDevMode(!!data.dev);
-      setStep("otp");
+    startTransition(() => {
+      void (async () => {
+        const res = await fetch("/api/auth/request-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Failed to send OTP");
+          return;
+        }
+        setDevMode(!!data.dev);
+        setStep("otp");
+      })();
     });
   }
 
   async function verifyOtp(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    startTransition(async () => {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Invalid code");
-        return;
-      }
-      if (data.isNewUser) {
-        setIsNewUser(true);
-        setStep("name");
-      } else {
-        router.push("/dashboard");
-        router.refresh();
-      }
+    startTransition(() => {
+      void (async () => {
+        const res = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, code }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Invalid code");
+          return;
+        }
+        if (data.isNewUser) {
+          setIsNewUser(true);
+          setStep("name");
+        } else {
+          router.push("/dashboard");
+          router.refresh();
+        }
+      })();
     });
   }
 
   async function saveName(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    startTransition(async () => {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code, displayName }),
-      });
-      if (!res.ok) {
-        setError("Failed to save name");
-        return;
-      }
-      router.push("/dashboard");
-      router.refresh();
+    startTransition(() => {
+      void (async () => {
+        const res = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, code, displayName }),
+        });
+        if (!res.ok) {
+          setError("Failed to save name");
+          return;
+        }
+        router.push("/dashboard");
+        router.refresh();
+      })();
     });
   }
 

@@ -25,14 +25,16 @@ export function CreateGroupDialog() {
     e.preventDefault();
     setError("");
     const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
-      const result = await createGroup(formData);
-      if (result.success) {
-        setOpen(false);
-        router.push(`/groups/${result.data.groupId}`);
-      } else {
-        setError(result.error);
-      }
+    startTransition(() => {
+      void (async () => {
+        const result = await createGroup(formData);
+        if (result.success) {
+          setOpen(false);
+          router.push(`/groups/${result.data.groupId}`);
+        } else {
+          setError(result.error);
+        }
+      })();
     });
   }
 

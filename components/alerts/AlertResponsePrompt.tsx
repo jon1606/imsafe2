@@ -24,10 +24,12 @@ export function AlertResponsePrompt({
   const [note, setNote] = useState("");
 
   function respond(status: SafetyStatus) {
-    startTransition(async () => {
-      await respondToAlert(alertId, status, note || undefined);
-      setResponded(true);
-      setResponseStatus(status);
+    startTransition(() => {
+      void (async () => {
+        await respondToAlert(alertId, status, note || undefined);
+        setResponded(true);
+        setResponseStatus(status);
+      })();
     });
   }
 

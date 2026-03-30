@@ -27,11 +27,13 @@ export function InviteLinkCard({ groupId, inviteCode, isAdmin }: InviteLinkCardP
   }
 
   function rotate() {
-    startTransition(async () => {
-      const result = await rotateInviteCode(groupId);
-      if (result.success) {
-        setCode(result.data.inviteCode);
-      }
+    startTransition(() => {
+      void (async () => {
+        const result = await rotateInviteCode(groupId);
+        if (result.success) {
+          setCode(result.data.inviteCode);
+        }
+      })();
     });
   }
 

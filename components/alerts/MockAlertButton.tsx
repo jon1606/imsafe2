@@ -13,9 +13,7 @@ export function MockAlertButton({ groupId }: MockAlertButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   function trigger() {
-    startTransition(async () => {
-      await triggerMockAlert(groupId);
-    });
+    startTransition(() => { void triggerMockAlert(groupId); });
   }
 
   return (

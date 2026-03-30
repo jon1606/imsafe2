@@ -24,18 +24,20 @@ export function AddContactDialog() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    startTransition(async () => {
-      const result = await followContact(phone);
-      if (result.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          setOpen(false);
-          setPhone("");
-          setSuccess(false);
-        }, 1500);
-      } else {
-        setError(result.error);
-      }
+    startTransition(() => {
+      void (async () => {
+        const result = await followContact(phone);
+        if (result.success) {
+          setSuccess(true);
+          setTimeout(() => {
+            setOpen(false);
+            setPhone("");
+            setSuccess(false);
+          }, 1500);
+        } else {
+          setError(result.error);
+        }
+      })();
     });
   }
 
