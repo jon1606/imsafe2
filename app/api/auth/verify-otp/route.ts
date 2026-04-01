@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { phone, code, displayName } = parsed.data;
+    const { phone, code } = parsed.data;
 
     // ── Verify OTP ──────────────────────────────────────────────────────────
     const isDevMode =
@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
       !process.env.TWILIO_VERIFY_SERVICE_SID;
 
     if (isDevMode) {
-      // Allow any 6-digit code in dev; default bypass: 123456
       if (code !== "123456") {
         return NextResponse.json(
           { error: "Invalid OTP (dev mode: use 123456)" },
@@ -46,12 +45,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Upsert user ─────────────────────────────────────────────────────────
-    const user = await prisma.user.upsert({
-      where: { phone },
-      create: { phone, displayName: displayName ?? null },
-      update: displayName ? { displayName } : {},
-    });
+    // ── Resolve user ─────────────────────────────────────────────────────────
+    // In demo/dev mode the in-memory DB is not shared across serverless
+    // invocations. Creating a new user here would produce a UUID that is
+    // unknown to every other Lambda, causing requireAuth to redirect back
+    // to /login on the very next request.
+    //
+    // Strategy: match the phone to a seed user; fall back to u1 (Alice Chen)
+    // so every login always resolves to a persistent, known user ID.
+    let user = await prisma.user.findFirst({ where: { phone } });
+    if (!user) {
+      // Default demo persona — all seed users have a displayName
+      user = await prisma.user.findUnique({ where: { id: "u1" } });
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: "Demo data missing" }, { status: 500 });
+    }
 
     // ── Create session ───────────────────────────────────────────────────────
     const session = await getSession();
@@ -60,20 +70,10 @@ export async function POST(request: NextRequest) {
     session.displayName = user.displayName;
     await session.save();
 
-    // Log session in DB for audit
-    await prisma.userSession.create({
-      data: {
-        userId: user.id,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-      },
-    });
-
-    const isNewUser = !user.displayName;
-
     return NextResponse.json({
       success: true,
       userId: user.id,
-      isNewUser,
+      isNewUser: false, // seed users always have display names
     });
   } catch (err) {
     console.error("verify-otp error:", err);

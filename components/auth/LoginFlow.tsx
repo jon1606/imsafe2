@@ -8,20 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-type Step = "phone" | "otp" | "name";
+type Step = "phone" | "otp";
 
 export function LoginFlow() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [isNewUser, setIsNewUser] = useState(false);
   const [devMode, setDevMode] = useState(false);
 
-  async function requestOtp(e: React.FormEvent) {
+  function requestOtp(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     startTransition(() => {
@@ -42,7 +40,7 @@ export function LoginFlow() {
     });
   }
 
-  async function verifyOtp(e: React.FormEvent) {
+  function verifyOtp(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     startTransition(() => {
@@ -55,31 +53,6 @@ export function LoginFlow() {
         const data = await res.json();
         if (!res.ok) {
           setError(data.error ?? "Invalid code");
-          return;
-        }
-        if (data.isNewUser) {
-          setIsNewUser(true);
-          setStep("name");
-        } else {
-          router.push("/dashboard");
-          router.refresh();
-        }
-      })();
-    });
-  }
-
-  async function saveName(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    startTransition(() => {
-      void (async () => {
-        const res = await fetch("/api/auth/verify-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone, code, displayName }),
-        });
-        if (!res.ok) {
-          setError("Failed to save name");
           return;
         }
         router.push("/dashboard");
@@ -98,13 +71,17 @@ export function LoginFlow() {
         </div>
         <CardTitle className="text-2xl">SafeCircle</CardTitle>
         <CardDescription>
-          {step === "phone" && "Sign in with your phone number"}
-          {step === "otp" && "Enter the verification code"}
-          {step === "name" && "What should we call you?"}
+          {step === "phone" ? "Sign in with your phone number" : "Enter the verification code"}
         </CardDescription>
       </CardHeader>
 
       <CardContent>
+        {/* Demo banner */}
+        <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700">
+          <strong>Demo mode</strong> — use any phone number and code <strong>123456</strong>.
+          Try <strong>+15550000001</strong> (Alice), <strong>+15550000002</strong> (Bob), or any number.
+        </div>
+
         {error && (
           <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
             {error}
@@ -118,16 +95,13 @@ export function LoginFlow() {
               <Input
                 id="phone"
                 type="tel"
-                placeholder="+1 555 000 0000"
+                placeholder="+15550000001"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
                 autoComplete="tel"
                 className="h-12 text-base"
               />
-              <p className="text-xs text-muted-foreground">
-                Include country code, e.g. +1 for US
-              </p>
             </div>
             <Button
               type="submit"
@@ -143,7 +117,7 @@ export function LoginFlow() {
           <form onSubmit={verifyOtp} className="space-y-4">
             {devMode && (
               <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-700">
-                Dev mode: use code <strong>123456</strong>
+                Demo mode: use code <strong>123456</strong>
               </div>
             )}
             <div className="space-y-2">
@@ -176,31 +150,6 @@ export function LoginFlow() {
               onClick={() => { setStep("phone"); setCode(""); setError(""); }}
             >
               Change number
-            </Button>
-          </form>
-        )}
-
-        {step === "name" && (
-          <form onSubmit={saveName} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Your name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Alice Chen"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                required
-                autoComplete="name"
-                className="h-12 text-base"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full h-12 text-base"
-              disabled={isPending || !displayName.trim()}
-            >
-              {isPending ? "Saving…" : "Continue"}
             </Button>
           </form>
         )}
