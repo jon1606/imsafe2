@@ -163,6 +163,10 @@ const RELATIONS: Record<string, Record<string, Relation>> = {
     user:       { type: "belongsTo", collection: "users",       foreignKey: "userId"       },
     alertEvent: { type: "belongsTo", collection: "alertEvents", foreignKey: "alertEventId" },
   },
+  statusUpdate: {
+    user:  { type: "belongsTo", collection: "users",  foreignKey: "userId"  },
+    group: { type: "belongsTo", collection: "groups", foreignKey: "groupId" },
+  },
   pushSubscription: {
     user: { type: "belongsTo", collection: "users", foreignKey: "userId" },
   },

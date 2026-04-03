@@ -61,6 +61,24 @@ export function LoginFlow() {
     });
   }
 
+  function quickLogin(demoPhone: string) {
+    startTransition(() => {
+      void (async () => {
+        const res = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: demoPhone, code: "123456" }),
+        });
+        if (!res.ok) {
+          setError("Quick login failed");
+          return;
+        }
+        router.push("/dashboard");
+        router.refresh();
+      })();
+    });
+  }
+
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="text-center pb-4">
@@ -76,10 +94,31 @@ export function LoginFlow() {
       </CardHeader>
 
       <CardContent>
-        {/* Demo banner */}
-        <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700">
-          <strong>Demo mode</strong> — use any phone number and code <strong>123456</strong>.
-          Try <strong>+15550000001</strong> (Alice), <strong>+15550000002</strong> (Bob), or any number.
+        {/* Quick demo login */}
+        <div className="mb-4 space-y-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick demo login</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: "Alice Chen", phone: "+15550000001" },
+              { label: "Bob Smith",  phone: "+15550000002" },
+              { label: "Carol Reyes",phone: "+15550000003" },
+              { label: "Dave Kim",   phone: "+15550000004" },
+            ].map(({ label, phone: p }) => (
+              <button
+                key={p}
+                type="button"
+                disabled={isPending}
+                onClick={() => quickLogin(p)}
+                className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-left"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="relative my-3">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="relative flex justify-center"><span className="bg-white px-2 text-xs text-gray-400">or sign in manually</span></div>
+          </div>
         </div>
 
         {error && (
