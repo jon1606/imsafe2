@@ -30,7 +30,8 @@ export function CreateGroupDialog() {
         const result = await createGroup(formData);
         if (result.success) {
           setOpen(false);
-          router.push(`/groups/${result.data.groupId}`);
+          router.push("/groups");
+          router.refresh();
         } else {
           setError(result.error);
         }
