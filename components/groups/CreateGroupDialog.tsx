@@ -25,12 +25,13 @@ export function CreateGroupDialog() {
     e.preventDefault();
     setError("");
     const formData = new FormData(e.currentTarget);
+    const groupName = (formData.get("name") as string) ?? "New Group";
     startTransition(() => {
       void (async () => {
         const result = await createGroup(formData);
         if (result.success) {
           setOpen(false);
-          router.push("/groups");
+          router.push(`/groups?created=${encodeURIComponent(groupName)}`);
           router.refresh();
         } else {
           setError(result.error);

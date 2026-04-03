@@ -5,8 +5,13 @@ import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
 
 export const metadata = { title: "Groups – SafeCircle" };
 
-export default async function GroupsPage() {
+interface PageProps {
+  searchParams: Promise<{ created?: string }>;
+}
+
+export default async function GroupsPage({ searchParams }: PageProps) {
   const { userId } = await requireAuth();
+  const { created } = await searchParams;
 
   const memberships = await prisma.groupMember.findMany({
     where: { userId },
@@ -52,6 +57,13 @@ export default async function GroupsPage() {
 
   return (
     <div className="p-4 space-y-4">
+      {created && (
+        <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+          <span className="font-semibold">Group &ldquo;{created}&rdquo; created!</span>
+          <span className="text-green-600"> — Demo mode: data resets between sessions (no database connected).</span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Groups</h1>
